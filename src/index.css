@@ -1,0 +1,178 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------
+   Design tokens — the Core Crew "Executive" palette and type scale.
+   Every colour/font/breakpoint below becomes a Tailwind utility,
+   e.g. --color-gold -> bg-gold / text-gold / border-gold.
+   --------------------------------------------------------------- */
+@theme {
+  /* Dark ground */
+  --color-navy: #0b1830;
+  --color-surface: #112340;
+  --color-raised: #1a3056;
+  --color-deep: #07111f;
+
+  /* Text on dark */
+  --color-cream: #f3efe6;
+  --color-fog: #a9b4c8;
+  --color-line: rgba(236, 230, 214, 0.16);
+
+  /* Accent */
+  --color-gold: #d4b062;
+  --color-gold-soft: #e3c47f;
+  --color-gold-ink: #7d5f18;
+
+  /* Light ground */
+  --color-ivory: #f5f1e8;
+  --color-ivory-2: #ece5d6;
+  --color-ivory-line: #ddd4c1;
+  --color-ink: #0b1830;
+  --color-ink-soft: #2b3448;
+  --color-ink-muted: #5a6378;
+
+  --font-sans: 'Hanken Grotesk', 'Segoe UI', sans-serif;
+  --font-serif: 'Instrument Serif', Georgia, serif;
+
+  /* Breakpoints mirror the original design: phone < 720, tablet, desktop >= 1100 */
+  --breakpoint-md: 720px;
+  --breakpoint-tab: 820px;
+  --breakpoint-lg: 1100px;
+
+  /* Soft, modern depth */
+  --radius-card: 16px;
+  --radius-xl2: 22px;
+  --shadow-soft: 0 24px 60px -30px rgba(3, 9, 20, 0.75);
+  --shadow-lift: 0 18px 40px -18px rgba(3, 9, 20, 0.85);
+  --shadow-gold: 0 14px 30px -12px rgba(212, 176, 98, 0.45);
+  --ease-out-soft: cubic-bezier(0.22, 0.75, 0.3, 1);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-navy);
+    color: var(--color-cream);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    /* room for the fixed quick-contact bar on phones */
+    padding-bottom: 72px;
+  }
+
+  @media (min-width: 720px) {
+    body {
+      font-size: 17px;
+      padding-bottom: 0;
+    }
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 400;
+  }
+
+  ::selection {
+    background: var(--color-gold);
+    color: var(--color-navy);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 3px;
+  }
+
+  /* details/summary: hide the native marker, we draw our own +/× */
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary {
+    list-style: none;
+  }
+
+  section {
+    scroll-margin-top: 84px;
+  }
+}
+
+@layer components {
+  /* Fine film of grain over the dark ground — stops large navy areas
+     from looking flat on big screens. */
+  .grain::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.35;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+
+  /* Warm light that sits behind the hero and a few dark sections. */
+  .glow-gold {
+    background-image: radial-gradient(
+      60% 60% at 70% 10%,
+      rgba(212, 176, 98, 0.16) 0%,
+      rgba(212, 176, 98, 0) 70%
+    );
+  }
+
+  .glow-cool {
+    background-image: radial-gradient(
+      55% 70% at 10% 0%,
+      rgba(26, 48, 86, 0.75) 0%,
+      rgba(11, 24, 48, 0) 70%
+    );
+  }
+
+  /* Hairline that fades out at both ends — used between sections. */
+  .rule-fade {
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgba(236, 230, 214, 0.22) 20%,
+      rgba(236, 230, 214, 0.22) 80%,
+      transparent
+    );
+  }
+
+  /* Scroll reveal: elements start slightly low and fade in. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.7s var(--ease-out-soft),
+      transform 0.7s var(--ease-out-soft);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  .reveal-in {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Anyone who asks for less motion gets none of it. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
