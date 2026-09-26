@@ -177,3 +177,24 @@ export function SectionHead({
     </Reveal>
   )
 }
+
+/**
+ * Renders translated copy where *asterisks* mark the gold italic words,
+ * e.g. "Every trade. *Every level.*" — so each language can put the
+ * emphasis wherever its word order needs it.
+ */
+export function Rich({ text, tone, block }: { text: string; tone?: Tone; block?: boolean }) {
+  return (
+    <>
+      {text.split(/\*([^*]+)\*/).map((part, index) =>
+        index % 2 === 1 ? (
+          <Em key={index} tone={tone} block={block}>
+            {part}
+          </Em>
+        ) : (
+          part
+        ),
+      )}
+    </>
+  )
+}

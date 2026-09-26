@@ -12,8 +12,10 @@ import { QuoteSection } from './components/QuoteSection'
 import { SiteFooter } from './components/SiteFooter'
 import { MobileBar } from './components/MobileBar'
 import type { Selection } from './types'
+import { useLanguage } from './i18n/context'
 
 export default function App() {
+  const { t } = useLanguage()
   // What the visitor picked in the quick-start bar, handed to the quote form.
   const [selection, setSelection] = useState<Selection | null>(null)
 
@@ -28,7 +30,7 @@ export default function App() {
         href="#main"
         className="absolute left-[-9999px] top-4 z-100 rounded-md bg-gold px-3.5 py-2.5 text-navy focus:left-4"
       >
-        Skip to content
+        {t.common.skipToContent}
       </a>
 
       <SiteHeader />

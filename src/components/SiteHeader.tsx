@@ -3,6 +3,8 @@ import { ButtonLink } from './ui/Primitives'
 import { IconMenu } from './ui/icons'
 import { useFitNav } from '../hooks/useFitNav'
 import { navLinks } from '../data/site'
+import { useLanguage } from '../i18n/context'
+import { LanguageSwitcher } from './LanguageSwitcher'
 
 export function Brand({ label }: { label: string }) {
   return (
@@ -28,7 +30,9 @@ export function Brand({ label }: { label: string }) {
 export function SiteHeader() {
   const [open, setOpen] = useState(false)
   const [stuck, setStuck] = useState(false)
-  const { rowRef, compact } = useFitNav<HTMLDivElement>()
+  const { lang, t } = useLanguage()
+  // Re-measured per language: translated menu labels have different widths.
+  const { rowRef, compact } = useFitNav<HTMLDivElement>(lang)
 
   // Transparent over the hero, frosted once the page moves.
   useEffect(() => {
@@ -57,13 +61,13 @@ export function SiteHeader() {
     >
       <div
         ref={rowRef}
-        className={`mx-auto flex w-full max-w-[1240px] items-center gap-7 px-4 transition-[height] duration-500 md:px-10 ${
+        className={`mx-auto flex w-full max-w-[1240px] items-center gap-3 px-4 md:gap-7 transition-[height] duration-500 md:px-10 ${
           stuck ? 'h-[62px] lg:h-[72px]' : 'h-[68px] lg:h-20'
         }`}
       >
-        <Brand label="Core Crew Solutions — home" />
+        <Brand label={t.header.homeLabel} />
 
-        <nav id="main-nav" aria-label="Main" className={`ml-auto gap-1 ${navClasses}`}>
+        <nav id="main-nav" aria-label={t.header.navLabel} className={`ml-auto gap-1 ${navClasses}`}>
           {navLinks.map((link) => (
             <a
               key={link.href}
@@ -75,22 +79,23 @@ export function SiteHeader() {
                   : 'after:absolute after:inset-x-3.5 after:bottom-1.5 after:h-px after:origin-left after:scale-x-0 after:bg-gold after:transition-transform after:duration-300 hover:after:scale-x-100'
               }`}
             >
-              {link.label}
+              {t.nav[link.key]}
             </a>
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-3.5">
+        <div className="ml-auto flex items-center gap-2 min-[381px]:gap-2.5 md:gap-3.5">
+          <LanguageSwitcher />
           {/* wrapper, not a `hidden` class on the button itself: Tailwind's
               display utilities would fight each other inside one element */}
           <span className="hidden md:block">
             <ButtonLink href="#quote" className="min-h-[44px] px-5 text-[15px]">
-              Request Workforce
+              {t.header.cta}
             </ButtonLink>
           </span>
           <button
             type="button"
-            aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-label={open ? t.header.closeMenu : t.header.openMenu}
             aria-expanded={open}
             aria-controls="main-nav"
             onClick={() => setOpen((v) => !v)}

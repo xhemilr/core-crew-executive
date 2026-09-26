@@ -1,13 +1,17 @@
-import { Wrap } from './ui/Primitives'
+import { Rich, Wrap } from './ui/Primitives'
 import { Brand } from './SiteHeader'
 import { IconFacebook, IconInstagram, IconLinkedIn } from './ui/icons'
-import { company, footerLinks } from '../data/site'
+import { company, navLinks } from '../data/site'
+import { useLanguage } from '../i18n/context'
+import { LANGS, languages } from '../i18n/languages'
 
 const socials = [
   { label: 'LinkedIn', Icon: IconLinkedIn },
   { label: 'Facebook', Icon: IconFacebook },
   { label: 'Instagram', Icon: IconInstagram },
 ]
+
+const link = 'inline-block py-1 text-cream no-underline transition-colors duration-200 hover:text-gold'
 
 function Column({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -19,15 +23,17 @@ function Column({ title, children }: { title: string; children: React.ReactNode 
 }
 
 export function SiteFooter() {
+  const { lang, t, setLang, hrefFor } = useLanguage()
+
   return (
     <footer className="relative bg-deep pt-16 pb-7 text-fog">
       <span aria-hidden="true" className="rule-fade absolute inset-x-0 top-0 h-px" />
       <Wrap>
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
           <div>
-            <Brand label="Core Crew Solutions — back to top" />
+            <Brand label={t.footer.topLabel} />
             <p className="mt-6 max-w-[320px] font-serif text-[30px] leading-tight text-cream">
-              Reliable workforce. <em className="block italic text-gold">Ready when you need it.</em>
+              <Rich text={t.footer.tagline} block />
             </p>
             <div className="mt-6 flex gap-2.5">
               {socials.map(({ label, Icon }) => (
@@ -43,40 +49,40 @@ export function SiteFooter() {
             </div>
           </div>
 
-          <Column title="Company">
-            {footerLinks.company.map((link) => (
-              <li key={link.href}>
-                <a className="inline-block py-1 text-cream no-underline transition-colors duration-200 hover:text-gold" href={link.href}>
-                  {link.label}
+          <Column title={t.footer.company}>
+            {navLinks.map((item) => (
+              <li key={item.href}>
+                <a className={link} href={item.href}>
+                  {t.nav[item.key]}
                 </a>
               </li>
             ))}
           </Column>
 
-          <Column title="Contact">
+          <Column title={t.footer.contact}>
             <li>
-              <a className="inline-block py-1 text-cream no-underline transition-colors duration-200 hover:text-gold" href={company.phoneHref}>
+              <a className={link} href={company.phoneHref}>
                 {company.phone}
               </a>
             </li>
             <li>
-              <a className="inline-block py-1 text-cream no-underline transition-colors duration-200 hover:text-gold" href={company.emailHref}>
+              <a className={link} href={company.emailHref}>
                 {company.email}
               </a>
             </li>
             <li>
-              <a className="inline-block py-1 text-cream no-underline transition-colors duration-200 hover:text-gold" href={company.whatsapp}>
+              <a className={link} href={company.whatsapp}>
                 WhatsApp
               </a>
             </li>
-            <li>Office: to be announced</li>
+            <li>{t.footer.office}</li>
           </Column>
 
-          <Column title="Legal">
-            {footerLinks.legal.map((link) => (
-              <li key={link.label}>
-                <a className="inline-block py-1 text-cream no-underline transition-colors duration-200 hover:text-gold" href={link.href}>
-                  {link.label}
+          <Column title={t.footer.legal}>
+            {t.footer.legalLinks.map((label) => (
+              <li key={label}>
+                <a className={link} href="#">
+                  {label}
                 </a>
               </li>
             ))}
@@ -85,24 +91,47 @@ export function SiteFooter() {
 
         <div className="mt-14 flex flex-wrap items-center justify-between gap-3 border-y border-line py-[22px]">
           <p className="text-cream">
-            Looking for work?{' '}
-            <span className="text-fog">
-              Candidate registration is coming soon — meanwhile, contact us by email.
-            </span>
+            {t.footer.jobsTitle} <span className="text-fog">{t.footer.jobsText}</span>
           </p>
           <a
             className="text-gold no-underline hover:text-gold-soft"
-            href={`${company.emailHref}?subject=Job%20seeker%20enquiry`}
+            href={`${company.emailHref}?subject=${encodeURIComponent(t.footer.jobsSubject)}`}
           >
             {company.email}
           </a>
         </div>
 
-        <div className="mt-6 flex flex-wrap justify-between gap-3 text-[13px]">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-[13px]">
           <span>
-            © {new Date().getFullYear()} {company.legalName} · {company.registration}
+            © {new Date().getFullYear()} {company.legalName} · {t.company.registration}
           </span>
-          <span>Photos: Unsplash</span>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <nav aria-label={t.footer.language}>
+              <ul className="flex items-center gap-1">
+                {LANGS.map((code) => (
+                  <li key={code}>
+                    <a
+                      href={hrefFor(code)}
+                      hrefLang={code}
+                      lang={code}
+                      aria-current={code === lang ? 'true' : undefined}
+                      onClick={(event) => {
+                        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey) return
+                        event.preventDefault()
+                        setLang(code)
+                      }}
+                      className={`inline-block rounded-full px-2.5 py-1.5 no-underline transition-colors duration-200 ${
+                        code === lang ? 'text-gold' : 'text-fog hover:text-cream'
+                      }`}
+                    >
+                      {languages[code].name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <span>{t.footer.photos}</span>
+          </div>
         </div>
       </Wrap>
     </footer>

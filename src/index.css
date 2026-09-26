@@ -1,6 +1,43 @@
 @import 'tailwindcss';
 
 /* ---------------------------------------------------------------
+   Cyrillic for the Macedonian version.
+   Hanken Grotesk and Instrument Serif have no Cyrillic letters, so
+   these close matches step in for those letters only (unicode-range):
+   browsers download them only when Macedonian text is on screen.
+   Onest and Noto Serif Display — both SIL Open Font License.
+   --------------------------------------------------------------- */
+@font-face {
+  font-family: 'Onest Cyrillic';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('./assets/fonts/onest-cyrillic-wght-normal.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+/* Condensed width (62.5%) to sit close to the narrow Instrument Serif. */
+@font-face {
+  font-family: 'Noto Serif Display Cyrillic';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 62.5%;
+  font-display: swap;
+  src: url('./assets/fonts/noto-serif-display-cyrillic-wdth-normal.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+@font-face {
+  font-family: 'Noto Serif Display Cyrillic';
+  font-style: italic;
+  font-weight: 400;
+  font-stretch: 62.5%;
+  font-display: swap;
+  src: url('./assets/fonts/noto-serif-display-cyrillic-wdth-italic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+/* ---------------------------------------------------------------
    Design tokens — the Core Crew "Executive" palette and type scale.
    Every colour/font/breakpoint below becomes a Tailwind utility,
    e.g. --color-gold -> bg-gold / text-gold / border-gold.
@@ -30,12 +67,13 @@
   --color-ink-soft: #2b3448;
   --color-ink-muted: #5a6378;
 
-  --font-sans: 'Hanken Grotesk', 'Segoe UI', sans-serif;
-  --font-serif: 'Instrument Serif', Georgia, serif;
+  /* The Cyrillic faces only fill in Macedonian letters — see @font-face below. */
+  --font-sans: 'Hanken Grotesk', 'Onest Cyrillic', 'Segoe UI', sans-serif;
+  --font-serif: 'Instrument Serif', 'Noto Serif Display Cyrillic', Georgia, serif;
 
   /* Breakpoints mirror the original design: phone < 720, tablet, desktop >= 1100 */
   --breakpoint-md: 720px;
-  --breakpoint-tab: 820px;
+  --breakpoint-tab: 1024px;
   --breakpoint-lg: 1100px;
 
   /* Soft, modern depth */

@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { Button, Em, Heading, Kicker, Reveal, Section, Wrap } from './ui/Primitives'
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
+import { Button, Heading, Kicker, Reveal, Rich, Section, Wrap } from './ui/Primitives'
 import { IconArrowRight, IconChat, IconMail, IconPhone, IconPin } from './ui/icons'
 import { company } from '../data/site'
+import { useLanguage } from '../i18n/context'
 import type { Selection } from '../types'
 
 type Fields = {
@@ -90,6 +91,8 @@ function ContactRow({
 }
 
 export function QuoteSection({ selection }: { selection: Selection | null }) {
+  const { t } = useLanguage()
+  const { quickStart: qs, quote } = t
   const [fields, setFields] = useState<Fields>(empty)
   const [applied, setApplied] = useState<Selection | null>(null)
   const firstField = useRef<HTMLInputElement>(null)
@@ -100,9 +103,9 @@ export function QuoteSection({ selection }: { selection: Selection | null }) {
     setApplied(selection)
     setFields((current) => ({
       ...current,
-      type: `${selection.type} — ${selection.level} level`,
-      count: selection.count,
-      start: selection.when,
+      type: `${qs.types[selection.type]} — ${qs.levelPhrases[selection.level]}`,
+      count: qs.counts[selection.count],
+      start: qs.starts[selection.when],
     }))
   }
 
@@ -114,72 +117,83 @@ export function QuoteSection({ selection }: { selection: Selection | null }) {
   }, [selection])
 
   function set<K extends keyof Fields>(key: K) {
-    return (event: { target: { value: string } }) =>
+    return (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      event.target.setCustomValidity('')
       setFields((current) => ({ ...current, [key]: event.target.value }))
+    }
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const form = event.currentTarget
+    // Our own wording for the browser's "please fill in" bubbles, so they
+    // follow the page language instead of the browser's.
+    for (const element of Array.from(form.elements)) {
+      if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+        element.setCustomValidity('')
+        if (element.validity.valueMissing) element.setCustomValidity(quote.validation.required)
+        else if (element.validity.typeMismatch) element.setCustomValidity(quote.validation.email)
+      }
+    }
     if (!form.checkValidity()) {
       form.reportValidity()
       return
     }
+    const { mail } = quote
     const lines = [
-      `Company: ${fields.company}`,
-      `Contact person: ${fields.person}`,
-      `Phone: ${fields.phone}`,
-      `Email: ${fields.email}`,
-      `Type of workers: ${fields.type}`,
-      `Number of workers: ${fields.count}`,
-      `Work location: ${fields.location}`,
-      `Expected start: ${fields.start || '-'}`,
-      `Duration: ${fields.duration || '-'}`,
+      `${mail.company}: ${fields.company}`,
+      `${mail.person}: ${fields.person}`,
+      `${mail.phone}: ${fields.phone}`,
+      `${mail.email}: ${fields.email}`,
+      `${mail.type}: ${fields.type}`,
+      `${mail.count}: ${fields.count}`,
+      `${mail.location}: ${fields.location}`,
+      `${mail.start}: ${fields.start || '-'}`,
+      `${mail.duration}: ${fields.duration || '-'}`,
       '',
-      'Additional requirements:',
+      `${mail.notes}:`,
       fields.notes || '-',
     ]
     window.location.href = `${company.emailHref}?subject=${encodeURIComponent(
-      `Workforce quote request — ${fields.company}`,
+      mail.subject(fields.company),
     )}&body=${encodeURIComponent(lines.join('\n'))}`
   }
 
   return (
     <Section id="quote" tone="light">
-      <Wrap className="grid items-start gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+      <Wrap className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
         <div>
-          <Kicker tone="light">Contact</Kicker>
+          <Kicker tone="light">{quote.kicker}</Kicker>
           <Heading>
-            Request a <Em tone="light">Workforce Quote.</Em>
+            <Rich text={quote.title} tone="light" />
           </Heading>
           <p className="mt-6 text-lg text-ink-muted">
-            Tell us what you need. We’ll come back with a tailored proposal for your roles, team size
-            and timeline.
+            {quote.text}
           </p>
 
           <div className="mt-8 border-t border-ivory-line">
             <ContactRow
               href={company.phoneHref}
               icon={<IconPhone className="h-[18px] w-[18px]" />}
-              label="Phone"
+              label={quote.phone}
               value={company.phone}
             />
             <ContactRow
               href={company.emailHref}
               icon={<IconMail className="h-[18px] w-[18px]" />}
-              label="Email"
+              label={quote.email}
               value={company.email}
             />
             <ContactRow
               href={company.whatsapp}
               icon={<IconChat className="h-[18px] w-[18px]" />}
-              label="WhatsApp"
-              value="Message us"
+              label={quote.whatsapp}
+              value={quote.whatsappValue}
             />
             <ContactRow
               icon={<IconPin className="h-[18px] w-[18px]" />}
-              label="Office"
-              value={company.office}
+              label={quote.office}
+              value={t.company.office}
             />
           </div>
         </div>
@@ -187,17 +201,17 @@ export function QuoteSection({ selection }: { selection: Selection | null }) {
         <Reveal delay={100} className="rounded-[var(--radius-xl2)] border border-ivory-line bg-white p-5 shadow-[0_30px_70px_-45px_rgba(11,24,48,0.5)] md:p-10">
           {selection && (
             <p className="mb-6 rounded-r-xl border-l-[3px] border-gold bg-ivory px-4 py-3.5 text-[15px] shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
-              Your selection:{' '}
+              {quote.selectionLabel}{' '}
               <b className="font-bold">
-                {selection.count} workers · {selection.type}
+                {quote.workers(qs.counts[selection.count])} · {qs.types[selection.type]}
               </b>{' '}
-              · {selection.level} level · Start: {selection.when}
+              · {qs.levelPhrases[selection.level]} · {quote.start} {qs.starts[selection.when]}
             </p>
           )}
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="grid gap-5 md:grid-cols-2 md:gap-x-[18px]">
-              <Field id="f-company" label="Company name" required>
+              <Field id="f-company" label={quote.fields.company} required>
                 <input
                   id="f-company"
                   ref={firstField}
@@ -208,7 +222,7 @@ export function QuoteSection({ selection }: { selection: Selection | null }) {
                   onChange={set('company')}
                 />
               </Field>
-              <Field id="f-person" label="Contact person" required>
+              <Field id="f-person" label={quote.fields.person} required>
                 <input
                   id="f-person"
                   className={input}
@@ -218,7 +232,7 @@ export function QuoteSection({ selection }: { selection: Selection | null }) {
                   onChange={set('person')}
                 />
               </Field>
-              <Field id="f-phone" label="Phone" required>
+              <Field id="f-phone" label={quote.fields.phone} required>
                 <input
                   id="f-phone"
                   type="tel"
@@ -229,7 +243,7 @@ export function QuoteSection({ selection }: { selection: Selection | null }) {
                   onChange={set('phone')}
                 />
               </Field>
-              <Field id="f-email" label="Email" required>
+              <Field id="f-email" label={quote.fields.email} required>
                 <input
                   id="f-email"
                   type="email"
@@ -240,60 +254,60 @@ export function QuoteSection({ selection }: { selection: Selection | null }) {
                   onChange={set('email')}
                 />
               </Field>
-              <Field id="f-type" label="Type of workers required" required>
+              <Field id="f-type" label={quote.fields.type} required>
                 <input
                   id="f-type"
                   className={input}
-                  placeholder="e.g. 5 skilled masons, 1 foreman"
+                  placeholder={quote.placeholders.type}
                   required
                   value={fields.type}
                   onChange={set('type')}
                 />
               </Field>
-              <Field id="f-count" label="Number of workers" required>
+              <Field id="f-count" label={quote.fields.count} required>
                 <input
                   id="f-count"
                   className={input}
                   inputMode="numeric"
-                  placeholder="e.g. 5"
+                  placeholder={quote.placeholders.count}
                   required
                   value={fields.count}
                   onChange={set('count')}
                 />
               </Field>
-              <Field id="f-location" label="Work location" required>
+              <Field id="f-location" label={quote.fields.location} required>
                 <input
                   id="f-location"
                   className={input}
-                  placeholder="City / site"
+                  placeholder={quote.placeholders.location}
                   required
                   value={fields.location}
                   onChange={set('location')}
                 />
               </Field>
-              <Field id="f-start" label="Expected start date">
+              <Field id="f-start" label={quote.fields.start}>
                 <input
                   id="f-start"
                   className={input}
-                  placeholder="e.g. March 2027"
+                  placeholder={quote.placeholders.start}
                   value={fields.start}
                   onChange={set('start')}
                 />
               </Field>
-              <Field id="f-duration" label="Expected employment / assignment duration" full>
+              <Field id="f-duration" label={quote.fields.duration} full>
                 <input
                   id="f-duration"
                   className={input}
-                  placeholder="e.g. 12 months"
+                  placeholder={quote.placeholders.duration}
                   value={fields.duration}
                   onChange={set('duration')}
                 />
               </Field>
-              <Field id="f-notes" label="Additional requirements" full>
+              <Field id="f-notes" label={quote.fields.notes} full>
                 <textarea
                   id="f-notes"
                   className={`${input} min-h-24 resize-y border-[1.5px] p-3`}
-                  placeholder="Qualifications, languages, shifts, anything else…"
+                  placeholder={quote.placeholders.notes}
                   value={fields.notes}
                   onChange={set('notes')}
                 />
@@ -302,10 +316,10 @@ export function QuoteSection({ selection }: { selection: Selection | null }) {
 
             <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
               <p className="max-w-[300px] text-[13px] text-ink-muted">
-                Sends your request to {company.email} via your email app. We reply by email or phone.
+                {quote.sendNote(company.email)}
               </p>
               <Button variant="navy" type="submit">
-                Request a Workforce Quote <IconArrowRight className="h-[18px] w-[18px]" />
+                {t.common.requestQuote} <IconArrowRight className="h-[18px] w-[18px]" />
               </Button>
             </div>
           </form>

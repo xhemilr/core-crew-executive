@@ -20,15 +20,37 @@ npm run preview  # serve the built site locally
 | `src/App.tsx` | Page composition and the quick-start → quote-form state |
 | `src/components/` | One component per section of the page |
 | `src/components/ui/` | Shared bits: `Section`, `Wrap`, `Heading`, `Kicker`, `Button`, icons |
-| `src/data/site.ts` | **All copy and contact details** — phone, email, the sector matrix, process steps, FAQs |
+| `src/i18n/en.ts`, `mk.ts`, `sq.ts` | **All text on the site**, one file per language (English, Macedonian, Albanian) |
+| `src/i18n/languages.ts` | The language list and URLs (`/`, `/mk/`, `/sq/`) |
+| `src/data/site.ts` | Everything that isn't text: icons, photos, crew sizes (phone/email live in `company.ts`) |
 | `src/hooks/useFitNav.ts` | Collapses the top menu to a button when the links no longer fit on one line |
 | `src/index.css` | Tailwind import plus the design tokens (`@theme`): colours, fonts, breakpoints |
 
-Changing text, a phone number or a row in the workforce table usually means editing
-`src/data/site.ts` only.
+## Languages
+
+The site is in English (`/`), Macedonian (`/mk/`) and Albanian (`/sq/`). Visitors switch with
+the globe button in the header or the links at the bottom of the footer; the address changes
+without reloading, so back/forward and shared links keep the language.
+
+- **Changing text:** edit the same key in `src/i18n/en.ts`, `mk.ts` and `sq.ts`. TypeScript fails
+  the build if a key is missing in one language.
+- `*asterisks*` mark the gold italic words in a heading — each language can put them wherever its
+  word order needs.
+- Lists (sectors, steps, FAQs, industry cards…) line up by position with the icons/photos in
+  `src/data/site.ts`, so keep the same number of items and the same order in every language.
+- `\u00ad` in `mk.ts` is a soft hyphen (an invisible break point for long words in the table);
+  `\u00a0` in `sq.ts` is a non-breaking space.
+- Page title, description and link-preview text are the `meta` block of each dictionary. The build
+  writes them into `index.html`, `mk/index.html` and `sq/index.html` (see `vite.config.ts` and
+  `src/i18n/head.ts`), together with `hreflang` links, so search engines index every language.
+- Hanken Grotesk and Instrument Serif have no Cyrillic letters. `src/index.css` fills those in
+  with Onest and Noto Serif Display (self-hosted in `src/assets/fonts/`, SIL OFL); browsers only
+  download them when Macedonian text is on screen.
+
+Changing a phone number or the email means editing `src/data/company.ts`.
 
 Design tokens are Tailwind utilities: `bg-navy`, `text-gold`, `border-ivory-line`, `font-serif`.
-Breakpoints follow the design: `md` = 720px, `tab` = 820px (the sector table turns into cards below
+Breakpoints follow the design: `md` = 720px, `tab` = 1024px (the sector table turns into cards below
 it), `lg` = 1100px.
 
 ## Deployment

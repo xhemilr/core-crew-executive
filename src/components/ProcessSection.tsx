@@ -1,27 +1,29 @@
-import { Em, Heading, Kicker, Reveal, Section, Wrap } from './ui/Primitives'
+import { Heading, Kicker, Reveal, Rich, Section, Wrap } from './ui/Primitives'
 import { IconCheck, IconDot } from './ui/icons'
-import { employerPart, steps } from '../data/site'
+import { steps } from '../data/site'
+import { useLanguage } from '../i18n/context'
 
 export function ProcessSection() {
+  const { t } = useLanguage()
   return (
     <Section id="process" glow="cool">
       <Wrap className="grid items-start gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-[88px]">
         <div className="lg:sticky lg:top-[120px]">
-          <Kicker>For employers</Kicker>
+          <Kicker>{t.process.kicker}</Kicker>
           <Heading>
-            From request to work permit. <Em block>Handled.</Em>
+            <Rich text={t.process.title} block />
           </Heading>
           <p className="mt-6 text-lg text-fog">
-            Core Crew runs the entire process up to the work permit, completes all of the
-            documentation and arranges accommodation for your workers. You focus on your operation —
-            we deliver the people.
+            {t.process.text}
           </p>
 
           <div className="mt-9 rounded-[var(--radius-card)] border border-line bg-surface/70 px-7 py-6 backdrop-blur-sm">
-            <h3 className="text-[13px] font-semibold tracking-[0.14em] uppercase text-gold">Your part</h3>
+            <h3 className="text-[13px] font-semibold tracking-[0.14em] uppercase text-gold">
+              {t.process.yourPart}
+            </h3>
             <ul className="mt-3.5 grid gap-2.5">
-              {employerPart.map((item) => (
-                <li key={item} className="flex items-start gap-3 text-base text-cream">
+              {t.process.employerPart.map((item, index) => (
+                <li key={index} className="flex items-start gap-3 text-base text-cream">
                   <IconDot className="mt-[3px] h-5 w-5 flex-none text-fog" />
                   {item}
                 </li>
@@ -32,7 +34,8 @@ export function ProcessSection() {
 
         <ol className="relative">
           {steps.map((step, index) => {
-            const core = step.who === 'Core Crew'
+            const core = step.who === 'core'
+            const text = t.process.steps[index]
             return (
               <Reveal
                 as="li"
@@ -52,7 +55,7 @@ export function ProcessSection() {
                 />
                 {step.num === '02' && (
                   <span className="absolute -left-9 top-[34px] hidden rounded-full border border-gold/30 bg-gold/5 px-1.5 py-3 text-xs font-semibold whitespace-nowrap tracking-[0.2em] uppercase text-gold [writing-mode:vertical-rl] lg:block rotate-180">
-                    Handled by Core Crew
+                    {t.process.handledBy}
                   </span>
                 )}
                 <span
@@ -68,17 +71,17 @@ export function ProcessSection() {
                       core ? 'bg-gold text-navy' : 'border border-line text-fog'
                     }`}
                   >
-                    {step.who}
+                    {t.process.who[step.who]}
                   </span>
                   <h3 className="mt-2 font-serif text-[28px] leading-tight lg:text-[32px]">
-                    {step.title}
+                    {text.title}
                   </h3>
-                  <p className="mt-2 text-fog">{step.text}</p>
+                  <p className="mt-2 text-fog">{text.text}</p>
 
-                  {step.bullets && (
+                  {text.bullets && (
                     <ul className="mt-3.5 grid gap-2 lg:grid-cols-2 lg:gap-x-6">
-                      {step.bullets.map((bullet) => (
-                        <li key={bullet} className="flex items-start gap-2.5 text-[15px] text-cream">
+                      {text.bullets.map((bullet, bulletIndex) => (
+                        <li key={bulletIndex} className="flex items-start gap-2.5 text-[15px] text-cream">
                           <IconCheck className="mt-1 h-[18px] w-[18px] flex-none text-gold" />
                           {bullet}
                         </li>
